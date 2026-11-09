@@ -75,11 +75,16 @@ Permite acceso seguro desde redes móviles (4G/5G) y Wi-Fi externas directamente
 * **Proyecto:** `Personal Projects/homenexus/main.py` (interfaz gráfica en Python + CustomTkinter).
 * **Protocolo:** Mensajes UDP al puerto `38899` dentro de `br-lan` (`getPilot` / `setPilot`).
 * **Consideración de Red / WSL2:** Los paquetes de broadcast de descubrimiento UDP no atraviesan la interfaz virtual de WSL2 (incluso con networking en modo *mirrored*); por ende, la aplicación debe ejecutarse directamente en el entorno de Windows (`HomeNexus.bat` o `HomeNexus.exe`).
-* **Dispositivos WiZ Configurados:**
-  * `wiz_e9fed4` (MAC `44:4f:8e:e9:fe:d4`) -> IP estática `192.168.2.10`
-  * `wiz_eade00` (MAC `44:4f:8e:ea:de:00`) -> IP estática `192.168.2.11`
-  * Ambas IPs están reservadas fuera del rango DHCP dinámico (`100-250`).
-  * **Importante:** Las bombillas deben estar asociadas exclusivamente al punto de acceso del Asus, nunca al Archer C60, ya que el aislamiento L2 impediría la comunicación con la PC.
+* **Dispositivos Configurados:**
+  * **Luces WiZ:**
+    * `wiz_e9fed4` (MAC `44:4f:8e:e9:fe:d4`) -> IP estática `192.168.2.10`
+    * `wiz_eade00` (MAC `44:4f:8e:ea:de:00`) -> IP estática `192.168.2.11`
+    * Ambas IPs están reservadas fuera del rango DHCP dinámico (`100-250`).
+    * **Importante:** Las bombillas deben estar asociadas exclusivamente al punto de acceso del Asus, nunca al Archer C60, ya que el aislamiento L2 impediría la comunicación con la PC.
+  * **Televisor LG OLED C3 55" (webOS 23):**
+    * Hostname: `LG_OLED_C3` (MAC `a4:36:c7:94:84:e2`) -> Reserva IP estática `192.168.2.20`
+    * Control WebSocket SSL seguro en puerto `3001` con token persistente (`client_key`).
+    * Encendido remoto por **Wake-on-LAN (WoL)**; apagado, control de volumen, mute, navegación, entradas HDMI 1-4 y apps desde HomeNexus.
 
 ---
 
