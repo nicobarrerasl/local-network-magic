@@ -12,11 +12,11 @@ table bridge wds_isolate {
     chain forward {
         type filter hook forward priority 0; policy accept;
 
-        # Permitir que PC-MASTER_RACE (08:bf:b8:1b:b6:78 / 192.168.2.122) administre el Archer C60 (3c:84:6a:a9:2e:c9 / 192.168.2.2)
+        # Permitir que PC-MASTER_RACE (08:bf:b8:1b:b6:78 / 192.168.2.50) administre el Archer C60 (3c:84:6a:a9:2e:c9 / 192.168.2.2)
         ether saddr 08:bf:b8:1b:b6:78 ether daddr 3c:84:6a:a9:2e:c9 accept
         ether saddr 3c:84:6a:a9:2e:c9 ether daddr 08:bf:b8:1b:b6:78 accept
         ether saddr 08:bf:b8:1b:b6:78 arp daddr ip 192.168.2.2 accept
-        ether saddr 3c:84:6a:a9:2e:c9 arp daddr ip 192.168.2.122 accept
+        ether saddr 3c:84:6a:a9:2e:c9 arp daddr ip 192.168.2.50 accept
 
         # Aislar todo el trafico L2 (Cast, mDNS, SSDP, ARP, IPv4, IPv6) entre el enlace WDS y la red local
         iifname "phy0-ap0.sta*" counter drop

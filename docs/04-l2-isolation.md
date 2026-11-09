@@ -9,7 +9,7 @@ En esta topología existen dos viviendas comunicadas mediante el puente WDS:
 1. **Evitar descubrimiento mutuo:** Los celulares de una casa no deben ver, controlar ni transmitir por Chromecast/AirPlay/DIAL al Smart TV de la otra casa.
 2. **Mantener servicios comunes:** Ambas casas deben compartir la misma salida de fibra simétrica, el servidor DHCP del Asus, los servidores DNS locales y la protección del bloqueador de publicidad **`adblock-fast`**.
 3. **Preservar el Cast local interno:** En la casa de mamá, sus dispositivos deben poder transmitir sin problemas hacia su propio Android TV.
-4. **Acceso Administrativo Unidireccional:** La estación `PC-MASTER_RACE` (`192.168.2.122`) debe poder acceder al panel de administración web del Archer C60 (`http://192.168.2.2`).
+4. **Acceso Administrativo Unidireccional:** La estación `PC-MASTER_RACE` (`192.168.2.50`) debe poder acceder al panel de administración web del Archer C60 (`http://192.168.2.2`).
 
 ---
 
@@ -35,7 +35,7 @@ table bridge wds_isolate {
         ether saddr 08:bf:b8:1b:b6:78 ether daddr 3c:84:6a:a9:2e:c9 accept
         ether saddr 3c:84:6a:a9:2e:c9 ether daddr 08:bf:b8:1b:b6:78 accept
         ether saddr 08:bf:b8:1b:b6:78 arp daddr ip 192.168.2.2 accept
-        ether saddr 3c:84:6a:a9:2e:c9 arp daddr ip 192.168.2.122 accept
+        ether saddr 3c:84:6a:a9:2e:c9 arp daddr ip 192.168.2.50 accept
 
         # 2. Descartar todo el trafico de reenvio entre la interfaz WDS y el resto del bridge
         iifname "phy0-ap0.sta*" counter drop

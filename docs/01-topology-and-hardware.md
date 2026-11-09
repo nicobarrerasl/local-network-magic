@@ -37,7 +37,7 @@
   * Gateway / DNS: `192.168.2.1`
   * Repetidor Archer C60: `192.168.2.2`
   * Reservas IOT (Luces WiZ): `192.168.2.10`, `192.168.2.11`
-  * Reserva PC Principal (`PC-MASTER_RACE`): `192.168.2.122`
+  * Reserva PC Principal (`PC-MASTER_RACE`): `192.168.2.50` (fuera del pool dinámico)
   * Pool dinámico DHCP: `192.168.2.100` – `192.168.2.250` (`start=100`, `limit=150` en `/etc/config/dhcp`)
 * **Subred WireGuard (`wg0`):** `10.10.10.0/24`
   * Servidor Asus RT-AX52: `10.10.10.1`

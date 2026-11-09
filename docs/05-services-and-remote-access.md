@@ -64,7 +64,7 @@ Permite acceso seguro desde redes móviles (4G/5G) y Wi-Fi externas directamente
 * **Configuración DHCP en el Asus (`/etc/config/dhcp`):**
   * Hostname: `PC-MASTER_RACE`
   * Dirección MAC: `08:bf:b8:1b:b6:78`
-  * Dirección IP Fija: `192.168.2.122` (puerto físico `lan3` a 1000 Mbps).
+  * Dirección IP Fija: `192.168.2.50` (puerto físico `lan3` a 1000 Mbps, fuera del pool dinámico 100-249).
 * **Configuración LuCI WoL (`/etc/config/luci-wol`):**
   * Target registrado: `PC-MASTER_RACE` (`mac = '08:bf:b8:1b:b6:78'`, `iface = 'br-lan'`, `broadcast = '1'`).
   * Panel Web LuCI: `Services` -> `Wake on LAN` -> botón directo **Wake**.
@@ -118,7 +118,7 @@ Cuando estés fuera de casa o acostado conectado a la VPN WireGuard (`10.10.10.2
 1. Abrir el navegador en el teléfono e ingresar a `http://10.10.10.1` (LuCI).
 2. Ir a **Services** -> **Wake on LAN**.
 3. Tocar el botón **Wake** en la fila de `PC-MASTER_RACE`.
-4. En 10-15 segundos la PC estará en Windows lista para conectar por **Moonlight** (`192.168.2.122:27989`) o Escritorio Remoto.
+4. En 10-15 segundos la PC estará en Windows lista para conectar por **Moonlight** (`192.168.2.50:27989`) o Escritorio Remoto.
 
 ---
 
@@ -146,12 +146,12 @@ Cuando estés fuera de casa o acostado conectado a la VPN WireGuard (`10.10.10.2
 * **Causa del ajuste de puerto:** WSL2 en modo *mirrored* reserva rangos efímeros altos (`44620–48715`), bloqueando el puerto RTSP por defecto (`48010`). Se configuró `port = 27989` en `C:\Program Files\Apollo\config\sunshine.conf` (rango `27984–28010`, libre de colisiones con WSL2).
 * **Panel Web local en la PC:** `https://localhost:27990` (o desde el acceso directo de Inicio *Apollo*).
 * **Cliente Moonlight en el OnePlus 13:**
-  * En Wi-Fi local la detecta solo; para dejarla compatible también con **WG Tunnel / WireGuard (4G/5G)**, tocar **`+`** en Moonlight y agregar manualmente: **`192.168.2.122:27989`**.
+  * En Wi-Fi local la detecta solo; para dejarla compatible también con **WG Tunnel / WireGuard (4G/5G)**, tocar **`+`** en Moonlight y agregar manualmente: **`192.168.2.50:27989`**.
   * **Ajustes óptimos para la Radeon RX 6800 XT:** Resolución *Nativa (Pantalla completa)*, **120 FPS**, códec **HEVC (H.265)** (y HDR opcional).
   * **Apagar el monitor físico al entrar desde la cama:** Con `Virtual Display` conectado en el celular, presionar una vez `Win + P` en Windows y elegir *"Solo segunda pantalla"*. Windows recuerda el perfil automáticamente al conectar/desconectar el celular.
 
 ### Tutorial para Explorar Archivos de Windows 11 desde el OnePlus 13 (`SMB`)
-1. **En Windows 11 (`192.168.2.122`):**
+1. **En Windows 11 (`192.168.2.50`):**
    * En *Configuración -> Red e Internet -> Ethernet*, verificar que el perfil sea **Red privada**.
    * Clic derecho en la carpeta o unidad a compartir -> *Propiedades -> Uso compartido -> Uso compartido avanzado* -> tildar *Compartir esta carpeta* -> *Permisos* -> dar permisos al usuario.
    * Habilitar en PowerShell (Administrador) la subred de WireGuard (`10.10.10.0/24`) en el Firewall de Windows para que también funcione desde 4G/5G:
@@ -161,5 +161,5 @@ Cuando estés fuera de casa o acostado conectado a la VPN WireGuard (`10.10.10.2
 2. **En el OnePlus 13 (Android):**
    * Instalar **Cx Explorador de archivos** o **Material Files**.
    * Ir a *Red -> `+` Nueva ubicación -> Remoto -> SMB*.
-   * **Host:** `192.168.2.122`
+   * **Host:** `192.168.2.50`
    * **Usuario / Contraseña:** Credenciales reales de la cuenta de Windows *(si se usa cuenta Microsoft con PIN, ingresar el correo Microsoft y la contraseña de la cuenta, **no el PIN**)*.
