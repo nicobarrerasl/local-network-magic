@@ -23,7 +23,7 @@
 * **Credenciales Menú Avanzado:** Usuario **`admin`** / Contraseña: la misma contraseña del módem presente en la etiqueta física del equipo.
 * **Credenciales PPPoE Fibra Movistar (Configuración en `/etc/config/network` del Asus):**
   * **Tipo:** `PPPoE` (`pppoe-wan` sobre interfaz física `wan`).
-  * **IPv6:** `wan6` con `device='@wan'`, recibiendo prefijo delegado `/56` nativo (`Dual Stack`, `Addressing Type: SLAAC`).
+  * **IPv6:** `wan6` con `device='@wan'`, recibiendo prefijo delegado `/56` nativo (`Dual Stack`, `Unnumbered Model: Disable`, `Addressing Type: SLAAC`).
   * **VLAN ID en red GPON:** `10` (manejada directamente en el lado fibra por el Askey, prioridad `0`).
   * **Username:** `<USUARIO_PPPOE>` (*ver credentials.local.md*)
   * **Password:** `<PASSWORD_PPPOE>` (*ver credentials.local.md*)
@@ -38,7 +38,7 @@
   * Repetidor Archer C60: `192.168.2.2`
   * Reservas IOT (Luces WiZ): `192.168.2.10`, `192.168.2.11`
   * Reserva PC Principal (`PC-MASTER_RACE`): `192.168.2.122`
-  * Pool dinámico DHCP: `192.168.2.100` – `192.168.2.250`
+  * Pool dinámico DHCP: `192.168.2.100` – `192.168.2.250` (`start=100`, `limit=150` en `/etc/config/dhcp`)
 * **Subred WireGuard (`wg0`):** `10.10.10.0/24`
   * Servidor Asus RT-AX52: `10.10.10.1`
   * Cliente OnePlus 13: `10.10.10.2`

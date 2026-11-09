@@ -32,7 +32,7 @@ NL80211_CMD_UNEXPECTED_4ADDR_FRAME
 Este evento solo se dispara cuando el stack de red recibe la primera trama de datos con el encabezado 802.11 de 4 direcciones (`ToDS=1, FromDS=1`).
 
 ### 3. El Bloqueo Mutuo (*Deadlock*)
-1. El Archer C60 envía tramas de datos iniciales con `Addr2 (Transmitter Address) = 42:84:6a:a9:2e:c9` y `Addr3 (Source Address) = 3c:84:6a:a9:2e:c9`.
+1. El driver QCA del Archer C60, al no detectar el *Vendor IE* propietario de Atheros en el Beacon del Asus, envía tramas de datos iniciales con `Addr2 (Transmitter Address) = 42:84:6a:a9:2e:c9` y `Addr3 (Source Address) = 3c:84:6a:a9:2e:c9`.
 2. En el Asus RT-AX52, el chip MediaTek Filogic (`mt7915e`) cuenta con **`DECAP_OFFLOAD`** activo por hardware. Al procesar las tramas entrantes, el silicio las desencapsula directamente a tramas Ethernet estándar (`802.3`) antes de entregarlas al subsistema de red del kernel, inyectándolas directo en `phy0-ap0` → `br-lan`.
 3. Al ser desencapsuladas por hardware, **nunca se dispara el evento `NL80211_CMD_UNEXPECTED_4ADDR_FRAME`** en el kernel.
 4. Por ende, `hostapd` nunca creaba la interfaz `phy0-ap0.sta1` y la salida de `ubus call hostapd.phy0-ap0 get_clients` mostraba la estación `42:84:6a:a9:2e:c9` con `"wds": false`.
@@ -48,6 +48,6 @@ Para resolver el problema sin requerir parches en el kernel o deshabilitar la ac
 El kernel Linux `mac80211` impone un orden inmutable de llamadas netlink:
 1. **`NL80211_CMD_NEW_INTERFACE`**: Crear `phy0-ap0.sta1` vinculada a `phy0-ap0` con `iftype = NL80211_IFTYPE_AP_VLAN` y `"4addr": 1`.
 2. **`RTM_SETLINK` (`ip link set phy0-ap0.sta1 up`)**: Levantar la interfaz **antes** de asociar la estación. Esto ejecuta `ieee80211_do_open()` en el kernel y vincula internamente `vlansdata->bss = sdata->bss`. Si no está activa (`UP`), la posterior asociación falla con error `-EINVAL`.
-3. **`NL80211_CMD_SET_STATION`**: Enviar a `dev: "phy0-ap0"` la tupla `mac: "42:84:6a:a9:2e:c9"` y `sta_vlan: <ifindex>`. Esto invoca `drv_sta_set_4addr(..., true)` en el driver de MediaTek.
-4. **Incorporación a `br-lan`**: Se añade la interfaz al puente local mediante netifd / `brctl addif br-lan phy0-ap0.sta1`.
-5. **Idempotencia y Resiliencia**: El script valida el estado cada 2 segundos. Si se produce un `wifi reload` y `phy0-ap0` cambia de `ifindex`, el script detecta el error mediante `nl80211.error()`, destruye la interfaz vieja huérfana y recrea el enlace limpiamente.
+3. **`NL80211_CMD_SET_STATION`**: Enviar a `dev: "phy0-ap0"` la tupla `mac: "42:84:6a:a9:2e:c9"` y `sta_vlan: <ifindex de phy0-ap0.sta1>`. Esto asigna `vlansdata->u.vlan.sta`, activa `drv_sta_set_4addr(..., true)` en el driver `mt7915e` de MediaTek y es **idempotente** (si ya estaba vinculada, el kernel ejecuta `if (sta->sdata == vlansdata) return 0;`).
+4. **Incorporación a `br-lan`**: Al llamarse `phy0-ap0.sta1`, `netifd` la detecta automáticamente y la une a `br-lan` (el script incluye además un respaldo explícito con `brctl addif br-lan phy0-ap0.sta1`).
+5. **Idempotencia y Resiliencia ante `wifi reload`**: El script valida el estado cada 2 segundos. Si se produce un `wifi reload` y `phy0-ap0` se recrea con un nuevo `ifindex`, el `SET_STATION` contra el `phy0-ap0.sta1` viejo devuelve error (`-EINVAL`); el script lo detecta con `nl80211.error()`, destruye la interfaz vieja huérfana (`NL80211_CMD_DEL_INTERFACE`) y recrea el enlace limpiamente sobre el nuevo `phy0-ap0`.

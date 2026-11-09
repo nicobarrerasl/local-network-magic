@@ -92,8 +92,10 @@ nslookup asus-master-race.duckdns.org 1.1.1.1
 # Ver configuración Wi-Fi actual
 uci show wireless
 
-# Cambiar canal Wi-Fi de forma segura
+# Cambiar canal Wi-Fi de forma segura (ACS restringido a canales 1-7 para 40MHz con Archer C60)
 uci set wireless.radio0.channel='auto'
+uci delete wireless.radio0.channels
+uci add_list wireless.radio0.channels='1-7'
 uci set wireless.radio0.noscan='1'
 uci commit wireless
 wifi reload

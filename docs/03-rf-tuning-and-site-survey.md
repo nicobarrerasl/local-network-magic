@@ -54,6 +54,6 @@ Para atravesar **4 paredes de mampostería maciza**, la banda de **2.4 GHz** dem
 | **Tasa física RX (Archer → Asus)** | `108 Mbps` (`MCS 5`) | **`162–216 Mbps` (`MCS 12–13`)** | `54–162 Mbps` (`MCS 3–12`) |
 | **Throughput estimado por kernel** | `93.5 Mbps` | **`209.6 Mbps`** | `93.5 Mbps` |
 | **Latencia Ping (15 paq. 1400 B)** | Prom `14.9 ms` / Máx `129.6 ms` | Prom `11.6 ms` / Máx `34.0 ms` | Prom `3.0 ms` / Máx `9.2 ms` |
-| **Diagnóstico Práctico** | La placa metálica de la TV actuaba de jaula atenuadora | **100 Mbps reales de Internet**, seco y sin obstáculos directos | Reflexión en cerámicos y cañerías degrada MIMO |
+| **Diagnóstico Práctico** | La placa metálica de la TV actuaba de jaula atenuadora | **100 Mbps reales de Internet**, seco y pegado al cuarto de la TV | Rebote en cerámicos, espejo y cañerías degrada MIMO + humedad |
 
 * **Conclusión:** La **Posición B** resultó la ganadora indiscutida, logrando saturar el enlace de 100 Mbps de forma consistente.
