@@ -64,14 +64,61 @@ Permite acceso seguro desde redes móviles (4G/5G) y Wi-Fi externas directamente
 * **Configuración DHCP en el Asus (`/etc/config/dhcp`):**
   * Hostname: `PC-MASTER_RACE`
   * Dirección MAC: `08:bf:b8:1b:b6:78`
-  * Dirección IP Fija: `192.168.2.122` (necesaria también para mantener la excepción administrativa hacia `192.168.2.2` en `/etc/firewall.wds-isolate.nft`).
-* **Disparo de Magic Packet por SSH:**
-  ```sh
-  etherwake -D -i br-lan 08:bf:b8:1b:b6:78
+  * Dirección IP Fija: `192.168.2.122` (puerto físico `lan3` a 1000 Mbps).
+* **Configuración LuCI WoL (`/etc/config/luci-wol`):**
+  * Target registrado: `PC-MASTER_RACE` (`mac = '08:bf:b8:1b:b6:78'`, `iface = 'br-lan'`, `broadcast = '1'`).
+  * Panel Web LuCI: `Services` -> `Wake on LAN` -> botón directo **Wake**.
+* **Comando y Script de Disparo Rápido (`/usr/sbin/wake-pc`):**
+  * En el router:
+    ```sh
+    wake-pc
+    ```
+    *(Invoca `etherwake -D -b -i br-lan 08:bf:b8:1b:b6:78` registrando el evento en `logread -e wol`).*
+  * Desde la máquina de desarrollo / terminal:
+    ```bash
+    ./scripts/deploy.sh wol
+    ```
+* **Por qué el flag Broadcast (`-b`) es indispensable:**
+  Al usar broadcast L2 (`ff:ff:ff:ff:ff:ff`), el switch del router inunda todas las bocas físicas de la LAN sin depender de la tabla CAM/FDB (que olvida la MAC unicast tras 300 segundos de apagada la PC).
+* **Persistencia:** Incluido en `/etc/sysupgrade.conf` para no perderse ante actualizaciones de firmware.
+
+### Guía de Configuración Requerida en la PC (Windows 11 + Placa ASUS)
+
+Para que la PC encienda estando suspendida o apagada por completo (S5), se deben cumplir tres ajustes obligatorios:
+
+#### 1. Desactivar Inicio Rápido de Windows 11 (Fast Startup)
+Por defecto, Windows 11 apaga el equipo mediante hibernación híbrida del kernel (S4), lo cual desenergiza los buses PCIe y el chip de red, impidiendo responder al Magic Packet.
+* **En CMD o PowerShell (como Administrador):**
+  ```powershell
+  powercfg /h off
   ```
-* **Panel LuCI:** `Services` -> `Wake on LAN` -> elegir interfaz `br-lan` y host `PC-MASTER_RACE (08:bf:b8:1b:b6:78)` -> **Wake up host**.
-* **Pendiente de Revisión en la PC:**
-  Paquetes e IP fija ya listos en el Asus; queda pendiente revisar y probar la configuración en la BIOS/UEFI (`Wake on PCI-E` / desactivar ahorro `ErP`) y en las propiedades de la placa de red en Windows 11 (*Wake on Magic Packet*) para que la PC responda estando apagada o suspendida.
+  *(O en Panel de control -> Opciones de energía -> Elegir el comportamiento de los botones de encendido -> Desmarcar "Activar inicio rápido").*
+
+#### 2. Configurar la Tarjeta de Red en Administrador de Dispositivos
+1. Abrir `devmgmt.msc` (Administrador de dispositivos) -> expandir **Adaptadores de red**.
+2. Clic derecho en el adaptador Ethernet principal (Intel I225-V / Realtek Gaming 2.5GbE) -> **Propiedades**.
+3. Pestaña **Administración de energía**:
+   * Marcar: *Permitir que este dispositivo reactive el equipo*.
+   * Marcar: *Permitir solo un paquete Magic para reactivar el equipo*.
+4. Pestaña **Opciones avanzadas**:
+   * *Reactivación con paquete Magic* (Wake on Magic Packet) -> **Habilitado**.
+   * *Reactivación tras apagar* (Shutdown Wake-Up / Wake on link settings) -> **Habilitado**.
+   * *Ethernet de bajo consumo* (Energy Efficient Ethernet / Green Ethernet) -> **Deshabilitado**.
+
+#### 3. Ajustes en la BIOS/UEFI de la Placa Madre ASUS
+Al encender la PC, presionar `Supr` o `F2` para entrar al BIOS -> Presionar `F7` (Advanced Mode):
+1. Ir a **Advanced** -> **APM Configuration** (Advanced Power Management):
+   * **Power On By PCI-E** (o *Power On By PCIE/PCI*): Cambiar a **Enabled**. *(Crítico: ASUS enruta la tarjeta de red integrada por el bus PCIe; si está en Disabled, la placa madre ignora la señal de encendido).*
+   * **ErP Ready**: Cambiar a **Disabled**. *(Si está en Enable S4+S5 o S5, la fuente apaga la línea de 5V Standby para ahorrar energía europea, apagando el chip de red).*
+2. Guardar cambios con `F10` y reiniciar.
+3. **Prueba visual:** Con la PC apagada pero enchufada a la corriente, el LED del conector RJ45 Ethernet detrás del gabinete debe quedar encendido o titilando tenuemente (indicando link en espera de 10/100 Mbps).
+
+### Encendido Remoto desde el Móvil (OnePlus 13 vía WireGuard)
+Cuando estés fuera de casa o acostado conectado a la VPN WireGuard (`10.10.10.2`):
+1. Abrir el navegador en el teléfono e ingresar a `http://10.10.10.1` (LuCI).
+2. Ir a **Services** -> **Wake on LAN**.
+3. Tocar el botón **Wake** en la fila de `PC-MASTER_RACE`.
+4. En 10-15 segundos la PC estará en Windows lista para conectar por **Moonlight** (`192.168.2.122:27989`) o Escritorio Remoto.
 
 ---
 

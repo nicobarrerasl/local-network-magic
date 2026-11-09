@@ -86,7 +86,22 @@ nslookup asus-master-race.duckdns.org 1.1.1.1
 
 ---
 
-## 6.4 Configuración del Sistema (UCI)
+## 6.4 Wake-on-LAN (Encendido Remoto de PC)
+
+```sh
+# Disparar Magic Packet a PC-MASTER_RACE desde el router
+wake-pc
+
+# Ver logs de disparos WoL
+logread -e wol
+
+# Disparar desde el host local
+./scripts/deploy.sh wol
+```
+
+---
+
+## 6.5 Configuración del Sistema (UCI)
 
 ```sh
 # Ver configuración Wi-Fi actual

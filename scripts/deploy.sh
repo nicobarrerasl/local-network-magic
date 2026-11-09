@@ -11,11 +11,12 @@ echo " Target: ${ROUTER_USER}@${ROUTER_IP}"
 echo "============================================="
 
 usage() {
-    echo "Uso: $0 [ping|status|sync-wds|sync-firewall|sync-all|logs]"
+    echo "Uso: $0 [ping|status|wol|sync-wds|sync-firewall|sync-all|logs]"
     echo ""
     echo "Comandos:"
     echo "  ping           Comprueba si el router responde a ICMP"
     echo "  status         Muestra estado de interfaces, WDS y firewall"
+    echo "  wol            Envia paquete Wake-on-LAN a PC-MASTER_RACE"
     echo "  sync-wds       Copia wds-fix.uc e init.d/wds-fix al router"
     echo "  sync-firewall  Copia /etc/firewall.wds-isolate.nft y recarga firewall"
     echo "  sync-all       Sincroniza todos los archivos locales hacia el router"
@@ -42,10 +43,14 @@ case "$CMD" in
             nft list table bridge wds_isolate 2>/dev/null || echo 'Tabla wds_isolate no cargada'
         "
         ;;
+    wol)
+        echo "[+] Enviando Magic Packet Wake-on-LAN a PC-MASTER_RACE..."
+        ssh "${ROUTER_USER}@${ROUTER_IP}" "/usr/sbin/wake-pc"
+        ;;
     sync-wds)
         echo "[+] Sincronizando servicio wds-fix..."
-        scp router/usr/sbin/wds-fix.uc "${ROUTER_USER}@${ROUTER_IP}:/usr/sbin/wds-fix.uc"
-        scp router/etc/init.d/wds-fix "${ROUTER_USER}@${ROUTER_IP}:/etc/init.d/wds-fix"
+        scp -O router/usr/sbin/wds-fix.uc "${ROUTER_USER}@${ROUTER_IP}:/usr/sbin/wds-fix.uc"
+        scp -O router/etc/init.d/wds-fix "${ROUTER_USER}@${ROUTER_IP}:/etc/init.d/wds-fix"
         ssh "${ROUTER_USER}@${ROUTER_IP}" "
             chmod +x /usr/sbin/wds-fix.uc /etc/init.d/wds-fix
             /etc/init.d/wds-fix restart
@@ -54,7 +59,7 @@ case "$CMD" in
         ;;
     sync-firewall)
         echo "[+] Sincronizando reglas de aislamiento L2..."
-        scp router/etc/firewall.wds-isolate.nft "${ROUTER_USER}@${ROUTER_IP}:/etc/firewall.wds-isolate.nft"
+        scp -O router/etc/firewall.wds-isolate.nft "${ROUTER_USER}@${ROUTER_IP}:/etc/firewall.wds-isolate.nft"
         ssh "${ROUTER_USER}@${ROUTER_IP}" "
             nft -c -f /etc/firewall.wds-isolate.nft
             nft -f /etc/firewall.wds-isolate.nft
@@ -64,12 +69,13 @@ case "$CMD" in
         ;;
     sync-all)
         echo "[+] Sincronizando todos los archivos y configuraciones..."
-        scp router/usr/sbin/wds-fix.uc "${ROUTER_USER}@${ROUTER_IP}:/usr/sbin/wds-fix.uc"
-        scp router/etc/init.d/wds-fix "${ROUTER_USER}@${ROUTER_IP}:/etc/init.d/wds-fix"
-        scp router/etc/firewall.wds-isolate.nft "${ROUTER_USER}@${ROUTER_IP}:/etc/firewall.wds-isolate.nft"
-        scp router/etc/sysupgrade.conf "${ROUTER_USER}@${ROUTER_IP}:/etc/sysupgrade.conf"
+        scp -O router/usr/sbin/wds-fix.uc "${ROUTER_USER}@${ROUTER_IP}:/usr/sbin/wds-fix.uc"
+        scp -O router/etc/init.d/wds-fix "${ROUTER_USER}@${ROUTER_IP}:/etc/init.d/wds-fix"
+        scp -O router/usr/sbin/wake-pc "${ROUTER_USER}@${ROUTER_IP}:/usr/sbin/wake-pc"
+        scp -O router/etc/firewall.wds-isolate.nft "${ROUTER_USER}@${ROUTER_IP}:/etc/firewall.wds-isolate.nft"
+        scp -O router/etc/sysupgrade.conf "${ROUTER_USER}@${ROUTER_IP}:/etc/sysupgrade.conf"
         ssh "${ROUTER_USER}@${ROUTER_IP}" "
-            chmod +x /usr/sbin/wds-fix.uc /etc/init.d/wds-fix
+            chmod +x /usr/sbin/wds-fix.uc /etc/init.d/wds-fix /usr/sbin/wake-pc
             /etc/init.d/wds-fix restart
             nft -c -f /etc/firewall.wds-isolate.nft
             nft -f /etc/firewall.wds-isolate.nft

@@ -1,0 +1,10 @@
+#!/bin/sh
+# wake-pc - Wake-on-LAN trigger for PC-MASTER_RACE
+# Target: PC-MASTER_RACE (08:bf:b8:1b:b6:78) on br-lan
+
+TARGET_MAC="08:bf:b8:1b:b6:78"
+TARGET_IFACE="br-lan"
+
+logger -t wol "Enviando Magic Packet Wake-on-LAN a PC-MASTER_RACE ($TARGET_MAC) por $TARGET_IFACE"
+/usr/bin/etherwake -D -b -i "$TARGET_IFACE" "$TARGET_MAC"
+echo "[+] Magic Packet enviado a PC-MASTER_RACE ($TARGET_MAC) por $TARGET_IFACE"
