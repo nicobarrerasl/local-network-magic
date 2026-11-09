@@ -3,6 +3,8 @@
 *.swp
 *~
 *.tmp
+archive/
+*.original.*
 
 # Sensitive data, credentials and private keys
 credentials.local.md
