@@ -1,0 +1,23 @@
+# Backups and temporary files
+*.bak
+*.swp
+*~
+*.tmp
+
+# Sensitive data, credentials and private keys
+credentials.local.md
+*.local.md
+*.key
+*.pem
+id_rsa*
+*.ovpn
+.env
+.env.*
+!.env.example
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Build artifacts or logs
+*.log
