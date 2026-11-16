@@ -11,7 +11,7 @@ echo " Target: ${ROUTER_USER}@${ROUTER_IP}"
 echo "============================================="
 
 usage() {
-    echo "Uso: $0 [ping|status|wol|sync-wds|sync-firewall|sync-all|logs]"
+    echo "Uso: $0 [ping|status|wol|sync-wds|sync-firewall|sync-camara|sync-all|logs]"
     echo ""
     echo "Comandos:"
     echo "  ping           Comprueba si el router responde a ICMP"
@@ -19,6 +19,7 @@ usage() {
     echo "  wol            Envia paquete Wake-on-LAN a PC-MASTER_RACE"
     echo "  sync-wds       Copia wds-fix.uc e init.d/wds-fix al router"
     echo "  sync-firewall  Copia /etc/firewall.wds-isolate.nft y recarga firewall"
+    echo "  sync-camara    Copia camara-aviso.uc e init.d/camara-aviso (avisos de la camara IP)"
     echo "  sync-all       Sincroniza todos los archivos locales hacia el router"
     echo "  logs           Lee los ultimos logs del router (logread)"
     exit 1
@@ -67,6 +68,19 @@ case "$CMD" in
             echo '[+] Reglas de firewall validadas y aplicadas.'
         "
         ;;
+    sync-camara)
+        echo "[+] Sincronizando servicio camara-aviso..."
+        scp -O router/usr/sbin/camara-aviso.uc "${ROUTER_USER}@${ROUTER_IP}:/usr/sbin/camara-aviso.uc"
+        scp -O router/etc/init.d/camara-aviso "${ROUTER_USER}@${ROUTER_IP}:/etc/init.d/camara-aviso"
+        # /etc/config/camara_aviso NO se pisa: guarda el tema secreto de ntfy.
+        ssh "${ROUTER_USER}@${ROUTER_IP}" "
+            chmod +x /usr/sbin/camara-aviso.uc /etc/init.d/camara-aviso
+            /etc/init.d/camara-aviso enable
+            /etc/init.d/camara-aviso restart
+            sleep 2
+            logread -e camara-aviso | tail -3
+        "
+        ;;
     sync-all)
         echo "[+] Sincronizando todos los archivos y configuraciones..."
         scp -O router/usr/sbin/wds-fix.uc "${ROUTER_USER}@${ROUTER_IP}:/usr/sbin/wds-fix.uc"
@@ -84,7 +98,7 @@ case "$CMD" in
         "
         ;;
     logs)
-        ssh "${ROUTER_USER}@${ROUTER_IP}" "logread -e wds -e hostapd"
+        ssh "${ROUTER_USER}@${ROUTER_IP}" "logread -e wds -e hostapd -e camara-aviso"
         ;;
     *)
         usage

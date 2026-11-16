@@ -38,6 +38,8 @@
   * Repetidor Archer C60: `192.168.2.2`
   * Reservas IOT (Luces WiZ): `192.168.2.10`, `192.168.2.11`
   * Reserva PC Principal (`PC-MASTER_RACE`): `192.168.2.50` (fuera del pool dinámico)
+  * Reserva Cámara IP (`camara-ip`, XM530, MAC `84:b4:d2:ed:a6:d8`): `192.168.2.12` (fuera del pool dinámico)
+  * Reserva Teléfono (`OnePlus-13`, dos MAC aleatorias, una por SSID): `192.168.2.30` (fuera del pool dinámico; el firewall de la PC le permite llegar a Frigate en `192.168.2.50:5000`)
   * Pool dinámico DHCP: `192.168.2.100` – `192.168.2.250` (`start=100`, `limit=150` en `/etc/config/dhcp`)
 * **Subred WireGuard (`wg0`):** `10.10.10.0/24`
   * Servidor Asus RT-AX52: `10.10.10.1`

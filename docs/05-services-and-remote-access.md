@@ -11,7 +11,7 @@ OpenWrt 25.x utiliza el gestor de paquetes de Alpine Linux (`apk`):
 apk update
 apk add etherwake luci-app-wol kmod-wireguard wireguard-tools \
         luci-proto-wireguard ddns-scripts ddns-scripts-services \
-        luci-app-ddns curl ca-bundle
+        luci-app-ddns curl ca-bundle ucode-mod-socket
 /etc/init.d/rpcd restart
 ```
 
@@ -163,3 +163,27 @@ Cuando estés fuera de casa o acostado conectado a la VPN WireGuard (`10.10.10.2
    * Ir a *Red -> `+` Nueva ubicación -> Remoto -> SMB*.
    * **Host:** `192.168.2.50`
    * **Usuario / Contraseña:** Credenciales reales de la cuenta de Windows *(si se usa cuenta Microsoft con PIN, ingresar el correo Microsoft y la contraseña de la cuenta, **no el PIN**)*.
+
+---
+
+## 5.7 Cámara IP: sin Internet y con avisos propios (`camara-aviso`)
+
+La cámara IP (`192.168.2.12`, MAC `84:b4:d2:ed:a6:d8`, familia XM / iCSee) queda **aislada de Internet** y sus alarmas las recibe el router, que avisa al teléfono. Proyecto relacionado: repo `ip-camera` (Frigate, app Android y `camara.py`).
+
+### Corte de Internet
+* Regla UCI `firewall.camara_sin_internet` (`Camara-Sin-Internet`): `src=lan`, `dest=wan`, `src_mac=84:B4:D2:ED:A6:D8`, `proto=all`, `target=REJECT`. Al filtrar por MAC cubre IPv4 e IPv6.
+* Consecuencia: la app **iCSee deja de funcionar** (no llega a la nube). Para revertir: `uci delete firewall.camara_sin_internet && uci commit firewall && fw4 reload`.
+* Para cortar conexiones ya establecidas tras aplicar la regla: `echo 192.168.2.12 > /proc/net/nf_conntrack`.
+* **Hora:** como la cámara ya no llega a servidores NTP externos, el router sirve la hora (`system.ntp.enable_server='1'`) y la cámara tiene `192.168.2.1` como servidor NTP.
+
+### Avisos al teléfono
+```
+Cámara --(TCP 15002, JSON de alarma)--> router: camara-aviso.uc --(HTTPS)--> ntfy.sh --> app ntfy
+```
+* **Demonio:** `/usr/sbin/camara-aviso.uc` (ucode + `uloop`), servicio `procd` `/etc/init.d/camara-aviso`. Requiere el paquete **`ucode-mod-socket`** (reinstalar tras un sysupgrade: `apk add ucode-mod-socket`) y `curl`.
+* **Qué hace:** escucha en el puerto `15002`, acepta conexiones solo de la cámara, y publica un aviso en ntfy cuando el evento es de **persona** (`HumanDetect`; el nombre debe contener `human`) con estado `Start`. Los demás eventos solo se registran. Hay un enfriamiento de 60 s entre avisos.
+* **Configuración:** `/etc/config/camara_aviso` (plantilla en `router/etc/config/camara_aviso`). El `tema` de ntfy es secreto y vive solo en el router: `uci set camara_aviso.main.tema='...'`.
+* **En la cámara:** `NetWork.AlarmServer[0]` habilitado, protocolo `GENERAL`, servidor `192.168.2.1:15002` (se configura con el protocolo DVRIP desde el repo `ip-camera`).
+* **Registro:** `logread -e camara-aviso` (solo RAM).
+* **Despliegue:** `./scripts/deploy.sh sync-camara`.
+

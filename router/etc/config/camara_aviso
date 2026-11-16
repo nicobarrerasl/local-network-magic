@@ -1,0 +1,21 @@
+# /etc/config/camara_aviso - Avisos de la camara IP al telefono (ver /usr/sbin/camara-aviso.uc)
+#
+# Plantilla: el "tema" real es secreto (quien lo conoce puede leer y mandar avisos)
+# y se carga solo en el router con:
+#   uci set camara_aviso.main.tema='<tema-secreto>' && uci commit camara_aviso
+
+config aviso 'main'
+	option enabled '1'
+	# Puerto donde la camara entrega sus alarmas (Red > Servidor de alarmas).
+	option puerto '15002'
+	# Solo se aceptan alarmas desde estas IPs.
+	list origen '192.168.2.12'
+	# Se avisa solo si el nombre del evento contiene este texto (sin distinguir mayusculas).
+	option patron 'human'
+	# Segundos minimos entre dos avisos.
+	option enfriamiento '60'
+	option servidor 'https://ntfy.sh'
+	option tema ''
+	option titulo 'Camara'
+	option mensaje 'Persona en la puerta'
+	option prioridad 'high'

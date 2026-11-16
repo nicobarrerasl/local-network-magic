@@ -1,0 +1,23 @@
+#!/bin/sh /etc/rc.common
+# /etc/init.d/camara-aviso
+# Servicio procd del demonio que recibe las alarmas de la camara IP y avisa al telefono.
+
+START=99
+STOP=10
+USE_PROCD=1
+
+PROG=/usr/sbin/camara-aviso.uc
+
+start_service() {
+    [ "$(uci -q get camara_aviso.main.enabled)" = "0" ] && return 0
+    procd_open_instance
+    procd_set_param command /usr/bin/ucode "$PROG"
+    procd_set_param respawn 3600 5 5   # Reiniciar si cae; limite de 5 caidas en 1 hora
+    procd_set_param stdout 1           # stdout y stderr al syslog (logread), no a flash
+    procd_set_param stderr 1
+    procd_close_instance
+}
+
+service_triggers() {
+    procd_add_reload_trigger "camara_aviso"
+}
